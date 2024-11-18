@@ -3,15 +3,15 @@ package ru.peregruzochka.task_management_system.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.peregruzochka.task_management_system.dto.JwtAuthResponse;
 import ru.peregruzochka.task_management_system.dto.SingUpRequest;
-
 import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.mapper.UserMapper;
 import ru.peregruzochka.task_management_system.service.UserService;
@@ -28,10 +28,13 @@ public class AuthController {
 
     @PostMapping("/sing-up")
     @ResponseStatus(HttpStatus.CREATED)
-    public JwtAuthResponse singUp(@RequestBody @Valid SingUpRequest singUpRequest) {
+    public ResponseEntity<?> singUp(@RequestBody @Valid SingUpRequest singUpRequest) {
         User newUser = userMapper.toUserEntity(singUpRequest);
         User savedUser = userService.createUser(newUser);
         String token = jwtTokenProvider.generateToken(savedUser);
-        return new JwtAuthResponse(token);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + token);
+        return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 }

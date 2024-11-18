@@ -16,7 +16,7 @@ public class SingUpRequest {
     @Email(message = "Invalid email format")
     private String email;
 
-    @Pattern(regexp =  "(?=.*[A-Za-z])(?=.*\\d).{8,}$", message = "The password must contain at least 8 characters, including at least one letter and one number")
+    @Pattern(regexp ="^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\\d).*$", message = "The password must contain at least 8 characters, including at least one letter and one number")
     private String password;
 
     @NotBlank(message = "Username cannot be empty")
