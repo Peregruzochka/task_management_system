@@ -12,7 +12,7 @@ import ru.peregruzochka.task_management_system.dto.JwtAuthResponse;
 public class TestController {
 
     @GetMapping
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.OK)
     public JwtAuthResponse test() {
         return new JwtAuthResponse("success");
     }

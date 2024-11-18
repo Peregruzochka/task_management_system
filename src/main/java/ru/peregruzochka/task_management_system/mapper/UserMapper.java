@@ -1,17 +1,11 @@
 package ru.peregruzochka.task_management_system.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.peregruzochka.task_management_system.dto.SingUpRequest;
 import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.entity.UserRole;
-
-import java.util.Collection;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
