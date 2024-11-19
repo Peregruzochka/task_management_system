@@ -4,9 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -15,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.peregruzochka.task_management_system.service.UserService;
+import ru.peregruzochka.task_management_system.service.UserDetailServiceImpl;
 import ru.peregruzochka.task_management_system.util.JwtTokenProvider;
 
 import java.io.IOException;
@@ -26,7 +24,7 @@ import java.util.Objects;
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserService userService;
+    private final UserDetailServiceImpl userDetailService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -58,7 +56,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtTokenProvider.extractEmail(jwtToken);
 
         if (Objects.nonNull(email) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
-            UserDetails userDetails = userService.loadUserByUsername(email);
+            UserDetails userDetails = userDetailService.loadUserByUsername(email);
 
             if (jwtTokenProvider.isValid(jwtToken, userDetails)) {
                 setAuthentication(userDetails, request);

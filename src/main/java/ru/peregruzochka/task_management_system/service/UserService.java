@@ -1,36 +1,48 @@
 package ru.peregruzochka.task_management_system.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.peregruzochka.task_management_system.entity.User;
-import ru.peregruzochka.task_management_system.exception.EmailNotFoundException;
-import ru.peregruzochka.task_management_system.mapper.UserDetailsMapper;
 import ru.peregruzochka.task_management_system.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+@Slf4j
+public class UserService {
     private final UserRepository userRepository;
-    private final UserDetailsMapper userDetailsMapper;
-
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createUser(User user) {
+    public User signUp(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email address already in use");
         }
-        return userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+        log.info("Register new user: {}", savedUser.getEmail());
+        return savedUser;
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws EmailNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException(email));
-        return userDetailsMapper.toUserDetails(user);
+    public User signIn(User user) {
+        String email = user.getEmail();
+        User savedUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User with email '" + email + "' is not registered"));
+
+        validatePassword(user, savedUser);
+        log.info("User with email '{}' logged in", savedUser.getEmail());
+        return savedUser;
+    }
+
+    private void validatePassword(User user, User savedUser) {
+        String currentPassword = savedUser.getEncodedPassword();
+        String userPassword = user.getEncodedPassword();
+
+        if (!passwordEncoder.matches(userPassword, currentPassword)) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
     }
 }
