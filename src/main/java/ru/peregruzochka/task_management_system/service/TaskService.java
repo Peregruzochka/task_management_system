@@ -9,6 +9,11 @@ import ru.peregruzochka.task_management_system.entity.Task;
 import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.repository.UserRepository;
 
+import java.util.Objects;
+
+import static ru.peregruzochka.task_management_system.entity.TaskPriority.LOW;
+import static ru.peregruzochka.task_management_system.entity.TaskStatus.TODO;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -19,27 +24,27 @@ public class TaskService {
 
     @Transactional
     public Task createTask(Task task) {
-        validateAuthor(task);
-        validateAssignee(task);
+        validateUser(task.getAuthor(), "author");
+        validateUser(task.getAssignee(), "assignee");
+
+        if (Objects.isNull(task.getPriority())) {
+            task.setPriority(LOW);
+        }
+
+        if (Objects.isNull(task.getStatus())) {
+            task.setStatus(TODO);
+        }
 
         Task createdTask = taskRepository.save(task);
         log.info("Task created: {}", createdTask);
         return createdTask;
     }
 
-    private void validateAssignee(Task task) {
-        User assignee = task.getAssignee();
-        if (!userRepository.existsById(assignee.getId())) {
-            log.error("This user cannot be the assignee because he does not exist. Invalid user id = {}", assignee.getId());
-            throw new IllegalArgumentException("This user cannot be the assignee because he does not exist");
-        }
-    }
-
-    private void validateAuthor(Task task) {
-        User author = task.getAuthor();
-        if (!userRepository.existsById(author.getId())) {
-            log.error("This user cannot be the author because he does not exist. Invalid user id = {}", author.getId());
-            throw new IllegalArgumentException("This user cannot be the author because he does not exist");
+    private void validateUser(User user, String role) {
+        if (user == null || !userRepository.existsById(user.getId())) {
+            log.error("This user cannot be the {} because they do not exist. Invalid user id = {}", role,
+                    user != null ? user.getId() : "null");
+            throw new IllegalArgumentException(String.format("This user cannot be the %s because they do not exist", role));
         }
     }
 }
