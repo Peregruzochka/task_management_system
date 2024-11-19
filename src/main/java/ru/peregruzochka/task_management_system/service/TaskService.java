@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.peregruzochka.task_management_system.entity.Task;
+import ru.peregruzochka.task_management_system.entity.TaskStatus;
 import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.repository.UserRepository;
 
@@ -60,6 +61,16 @@ public class TaskService {
         return updatedTask;
     }
 
+    @Transactional
+    public Task changeStatus(UUID taskId, TaskStatus status) {
+        Task taskToUpdate = getTaskById(taskId);
+        TaskStatus oldStatus = taskToUpdate.getStatus();
+        taskToUpdate.setStatus(status);
+        Task updatedTask = taskRepository.save(taskToUpdate);
+        log.info("Task updated status {} -> {}: {}", oldStatus, status, updatedTask);
+        return updatedTask;
+    }
+
     private Task getTaskById(UUID taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
@@ -90,4 +101,6 @@ public class TaskService {
             throw new IllegalArgumentException(String.format("This user cannot be the %s because they do not exist", role));
         }
     }
+
+
 }
