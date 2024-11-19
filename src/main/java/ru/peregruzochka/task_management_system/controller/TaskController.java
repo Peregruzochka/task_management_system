@@ -27,4 +27,12 @@ public class TaskController {
         Task createdTask = taskService.createTask(task);
         return taskMapper.toTaskDto(createdTask);
     }
+
+    @PostMapping("/update")
+    @ResponseStatus(HttpStatus.OK)
+    public TaskDto updateTask(@RequestBody @Valid TaskDto taskDto) {
+        Task task = taskMapper.toTaskEntity(taskDto);
+        Task updatedTask = taskService.updateTask(task);
+        return taskMapper.toTaskDto(updatedTask);
+    }
 }

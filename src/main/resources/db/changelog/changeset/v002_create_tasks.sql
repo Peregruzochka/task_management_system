@@ -7,6 +7,7 @@ CREATE TABLE tasks (
     author_id           UUID            NOT NULL,
     assignee_id         UUID            NOT NULL,
     created_at          TIMESTAMP       NOT NULL,
+    updated_at          TIMESTAMP       NOT NULL,
 
     CONSTRAINT fk_author_id FOREIGN KEY (author_id) REFERENCES users(id),
     CONSTRAINT fk_assignee_id FOREIGN KEY (assignee_id ) REFERENCES users(id)

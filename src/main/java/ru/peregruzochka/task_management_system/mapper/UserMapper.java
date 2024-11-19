@@ -7,7 +7,6 @@ import ru.peregruzochka.task_management_system.dto.SingInRequest;
 import ru.peregruzochka.task_management_system.dto.SingUpRequest;
 import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.entity.UserRole;
-import ru.peregruzochka.task_management_system.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
