@@ -3,6 +3,7 @@ package ru.peregruzochka.task_management_system.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -47,5 +48,12 @@ public class TaskController {
     public TaskDto changeStatus(@PathVariable(value = "task-id") UUID taskId, @RequestParam TaskStatus status) {
         Task updatedTask = taskService.changeStatus(taskId, status);
         return taskMapper.toTaskDto(updatedTask);
+    }
+
+    @DeleteMapping("/{task-id}")
+    @ResponseStatus(HttpStatus.OK)
+    public TaskDto deleteTask(@PathVariable(value = "task-id") UUID taskId) {
+        Task deletedTask = taskService.deleteTask(taskId);
+        return taskMapper.toTaskDto(deletedTask);
     }
 }

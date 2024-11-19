@@ -71,6 +71,13 @@ public class TaskService {
         return updatedTask;
     }
 
+    @Transactional
+    public Task deleteTask(UUID taskId) {
+        Task deletedTask = getTaskById(taskId);
+        taskRepository.deleteById(taskId);
+        return deletedTask;
+    }
+
     private Task getTaskById(UUID taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
@@ -101,6 +108,4 @@ public class TaskService {
             throw new IllegalArgumentException(String.format("This user cannot be the %s because they do not exist", role));
         }
     }
-
-
 }
