@@ -18,6 +18,9 @@ services:
     environment:
       - ADMIN_EMAIL=peregruochka@gmail.com
       - ADMIN_PASSWORD=Password1234
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
     depends_on:
       - postgres
 
