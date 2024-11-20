@@ -20,12 +20,8 @@ public class SingUpRequest {
     @Schema(description = "User's email address", example = "user@example.com")
     private String email;
 
-    @Pattern(
-            regexp = "^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\\d).*$",
-            message = "The password must contain at least 8 characters, including at least one letter and one number"
-    )
-    @Schema(description = "User's password (minimum 8 characters, must include at least one letter and one number)",
-            example = "Password123")
+    @Pattern(regexp = "^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\\d).*$", message = "The password must contain at least 8 characters, including at least one letter and one number")
+    @Schema(description = "User's password (minimum 8 characters, must include at least one letter and one number)", example = "Password123")
     private String password;
 
     @NotBlank(message = "Username cannot be empty")

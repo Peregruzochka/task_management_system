@@ -1,8 +1,6 @@
 package ru.peregruzochka.task_management_system.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,19 +23,17 @@ import ru.peregruzochka.task_management_system.util.JwtTokenProvider;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "API for user authentication and authorization") // Description for the controller
+@Tag(name = "Authentication", description = "API for user authentication and authorization")
 public class AuthController {
     private final UserMapper userMapper;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/sing-up")
-    @Operation(summary = "Register a new user", description = "Creates a new user account and returns a JWT token")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "User successfully registered"),
-            @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(
+            summary = "Register a new user. [Available to all users]",
+            description = "Creates a new user account and returns a JWT token in header."
+    )
     public ResponseEntity<?> singUp(@RequestBody @Valid SingUpRequest singUpRequest) {
         User newUser = userMapper.toUserEntity(singUpRequest);
         User savedUser = userService.signUp(newUser);
@@ -49,12 +45,10 @@ public class AuthController {
     }
 
     @PostMapping("/sing-in")
-    @Operation(summary = "User login", description = "Authenticates the user and returns a JWT token in Authorization header")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "User successfully authenticated"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(
+            summary = "User login. [Available to all users]",
+            description = "Authenticates the user and returns a JWT token in Authorization header."
+    )
     public ResponseEntity<?> singIn(@RequestBody @Valid SingInRequest singInRequest) {
         User user = userMapper.toUserEntity(singInRequest);
         User savedUser = userService.signIn(user);

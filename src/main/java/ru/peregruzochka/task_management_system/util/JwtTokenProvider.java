@@ -4,31 +4,35 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import ru.peregruzochka.task_management_system.entity.User;
-import ru.peregruzochka.task_management_system.property.JwtProperties;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Component
+@ConfigurationProperties(prefix = "jwt")
 public class JwtTokenProvider {
-    private final JwtProperties jwtProperties;
     private final Algorithm algorithm;
     private final JWTVerifier verifier;
+    @Setter
+    private String issuer;
+    @Setter
+    private long expirationDays;
 
-    public JwtTokenProvider(JwtProperties jwtProperties) {
-        //TODO: поменять secret на env переменную;
-        this.jwtProperties = jwtProperties;
+    public JwtTokenProvider() {
         this.algorithm = Algorithm.HMAC256("secret");
         this.verifier = JWT.require(algorithm)
-                .withIssuer(jwtProperties.getIssuer())
+                .withIssuer(issuer)
                 .build();
     }
 
     public String generateToken(User user) {
         return JWT.create()
-                .withIssuer(jwtProperties.getIssuer())
+                .withIssuer(issuer)
                 .withClaim("id", user.getId().toString())
                 .withClaim("email", user.getEmail())
                 .withClaim("username", user.getUsername())
@@ -41,8 +45,12 @@ public class JwtTokenProvider {
         return verifier.verify(token).getClaim("email").asString();
     }
 
+    public UUID extractUserId(String token) {
+        return UUID.fromString(verifier.verify(token).getClaim("id").asString());
+    }
+
     private Date generateExpiresAt() {
-        return new Date(System.currentTimeMillis() + (long) jwtProperties.getExpirationDays() * 24 * 60 * 60 * 1000);
+        return new Date(System.currentTimeMillis() + expirationDays * 24 * 60 * 60 * 1000);
     }
 
     public boolean isValid(String token, UserDetails userDetails) {

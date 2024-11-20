@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.peregruzochka.task_management_system.entity.Task;
 import ru.peregruzochka.task_management_system.entity.TaskStatus;
 import ru.peregruzochka.task_management_system.entity.User;
+import ru.peregruzochka.task_management_system.repository.TaskRepository;
 import ru.peregruzochka.task_management_system.repository.UserRepository;
 
 import java.util.Objects;
