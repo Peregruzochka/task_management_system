@@ -10,6 +10,7 @@ import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.property.JwtProperties;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtTokenProvider {
@@ -39,6 +40,10 @@ public class JwtTokenProvider {
 
     public String extractEmail(String token) {
         return verifier.verify(token).getClaim("email").asString();
+    }
+
+    public UUID extractUserId(String token) {
+        return UUID.fromString(verifier.verify(token).getClaim("id").asString());
     }
 
     private Date generateExpiresAt() {
