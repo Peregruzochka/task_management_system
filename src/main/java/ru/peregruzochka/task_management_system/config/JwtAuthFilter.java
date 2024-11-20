@@ -41,7 +41,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-        log.debug("filter ok");
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {
@@ -72,6 +71,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(authToken);
         SecurityContextHolder.setContext(securityContext);
-        log.debug("setAuthentication ok");
     }
 }

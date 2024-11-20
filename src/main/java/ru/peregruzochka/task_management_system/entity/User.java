@@ -16,7 +16,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -26,7 +25,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -55,6 +53,9 @@ public class User {
 
     @OneToMany(mappedBy = "assignee")
     List<Task> executableTasks;
+
+    @OneToMany(mappedBy = "author")
+    List<Comment> comments;
 
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp

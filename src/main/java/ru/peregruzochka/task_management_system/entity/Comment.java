@@ -1,15 +1,13 @@
 package ru.peregruzochka.task_management_system.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -19,56 +17,35 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "tasks")
-public class Task {
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "title", nullable = false, length = 64)
-    private String title;
-
-    @Column(name = "task_description", length = 1024)
-    private String description;
-
-    @Column(name = "task_status", nullable = false, length = 16)
-    @Enumerated(EnumType.STRING)
-    private TaskStatus status;
-
-    @Column(name = "task_priority", nullable = false, length = 8)
-    @Enumerated(EnumType.STRING)
-    private TaskPriority priority;
+    @Column(name = "comment_text", nullable = false, length = 2048)
+    private String text;
 
     @ManyToOne
     @JoinColumn(name = "author_id")
     private User author;
 
-    @ManyToOne
-    @JoinColumn(name = "assignee_id")
-    private User assignee;
-
-    @OneToMany(mappedBy = "task")
-    private List<Comment> comments;
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "task_id")
+    private Task task;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 }
