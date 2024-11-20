@@ -1,0 +1,23 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+
+  application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMIN_EMAIL=peregruochka@gmail.com
+      - ADMIN_PASSWORD=Password1234
+    depends_on:
+      - postgres
+
