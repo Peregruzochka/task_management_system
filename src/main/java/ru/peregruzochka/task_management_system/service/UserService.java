@@ -1,5 +1,6 @@
 package ru.peregruzochka.task_management_system.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,12 @@ import ru.peregruzochka.task_management_system.repository.UserRepository;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminService adminService;
+
+    @PostConstruct
+    public void init() {
+        adminService.createAdminIfNotExists();
+    }
 
     @Transactional
     public User signUp(User user) {

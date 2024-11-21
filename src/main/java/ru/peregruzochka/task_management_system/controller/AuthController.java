@@ -29,6 +29,7 @@ public class AuthController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
+
     @PostMapping("/sing-up")
     @Operation(
             summary = "Register a new user. [Available to all users]",

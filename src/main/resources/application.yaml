@@ -24,3 +24,9 @@ jwt:
   issuer: auth0
   expiration-days: 7
   secret-key: ${JWT_SECRET_KEY:secret}
+
+admin:
+  email: ${ADMIN_EMAIL:testadmin@example.test}
+  password: ${ADMIN_PASSWORD:Password1234}
+
+#TODO распределить профили для разработки и для прода
