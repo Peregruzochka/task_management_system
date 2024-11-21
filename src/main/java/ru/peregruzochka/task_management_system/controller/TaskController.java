@@ -5,11 +5,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,7 +26,6 @@ import ru.peregruzochka.task_management_system.mapper.TaskMapper;
 import ru.peregruzochka.task_management_system.service.TaskService;
 import ru.peregruzochka.task_management_system.util.JwtTokenProvider;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +37,6 @@ public class TaskController {
     private final TaskMapper taskMapper;
     private final TaskService taskService;
     private final JwtTokenProvider jwtTokenProvider;
-
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -128,18 +124,19 @@ public class TaskController {
 
     @PostMapping("/search")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Search tasks [Available to all users after authorization]", description = "Searches and filters tasks with optional pagination. Filtering is done based on all parameters that are added to the request body")
+    @SecurityRequirement(name = "Bearer Authentication")
     public List<TaskDto> getTasks(@RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "10") int size,
-                                  @RequestBody(required = false) TaskFilterDto filter) {
+                                  @RequestBody TaskFilterDto filter) {
 
         List<Task> tasks = taskService.getTasks(page, size, filter);
         return taskMapper.toTaskDtoPage(tasks);
     }
-
 
     private UUID extractUserIdFromToken(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         return jwtTokenProvider.extractUserId(token);
     }
 }
-

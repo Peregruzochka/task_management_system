@@ -4,7 +4,6 @@
 
 * [Spring Boot](https://spring.io/projects/spring-boot) – как основной фрэймворк
 * [PostgreSQL](https://www.postgresql.org/) – как основная реляционная база данных
-* [Testcontainers](https://testcontainers.com/) – для изолированного тестирования с базой данных
 * [Liquibase](https://www.liquibase.org/) – для ведения миграций схемы БД
 * [Gradle](https://gradle.org/) – как система сборки приложения
 

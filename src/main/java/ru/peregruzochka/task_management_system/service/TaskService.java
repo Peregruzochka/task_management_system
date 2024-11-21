@@ -3,7 +3,6 @@ package ru.peregruzochka.task_management_system.service;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,7 +18,6 @@ import ru.peregruzochka.task_management_system.repository.UserRepository;
 import ru.peregruzochka.task_management_system.specification.TaskSpecification;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -43,11 +41,11 @@ public class TaskService {
         User author = getUserById(task.getAuthor().getId());
         if (Objects.isNull(task.getAssignee().getId())) {
             task.setAssignee(author);
+        } else {
+            User assignee = getUserById(task.getAssignee().getId());
+            task.setAssignee(assignee);
         }
 
-        User assignee = getUserById(task.getAssignee().getId());
-
-        defaultIfNull(task::setAssignee, assignee, author);
         defaultIfNull(task::setPriority, task.getPriority(), LOW);
         defaultIfNull(task::setStatus, task.getStatus(), TODO);
 
@@ -67,6 +65,11 @@ public class TaskService {
         updateField(taskToUpdate::setDescription, task.getDescription());
         updateField(taskToUpdate::setPriority, task.getPriority());
         updateField(taskToUpdate::setStatus, task.getStatus());
+
+        if (Objects.nonNull(task.getAssignee().getId())) {
+            User assignee = getUserById(task.getAssignee().getId());
+            updateField(taskToUpdate::setAssignee, assignee);
+        }
 
         Task updatedTask = taskRepository.save(taskToUpdate);
         log.info("Task updated: {}", updatedTask);
