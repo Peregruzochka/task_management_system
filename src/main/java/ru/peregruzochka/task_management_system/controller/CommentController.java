@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -44,6 +45,7 @@ public class CommentController {
             description = "Creates a new comment associated with a task. Requires authorization with a Bearer token."
     )
     @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     public CommentResponse createComment(
             @RequestBody CommentRequest commentDto,
             @RequestHeader("Authorization") String authHeader) {

@@ -4,8 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import ru.peregruzochka.task_management_system.entity.User;
@@ -14,20 +14,23 @@ import java.util.Date;
 import java.util.UUID;
 
 @Component
-@ConfigurationProperties(prefix = "jwt")
 public class JwtTokenProvider {
-    private final Algorithm algorithm;
-    private final JWTVerifier verifier;
-    @Setter
+    private Algorithm algorithm;
+    private JWTVerifier verifier;
+
+    @Value("${jwt.issuer}")
     private String issuer;
-    @Setter
+
+    @Value("${jwt.expiration-days}")
     private long expirationDays;
 
-    public JwtTokenProvider() {
-        this.algorithm = Algorithm.HMAC256("secret");
-        this.verifier = JWT.require(algorithm)
-                .withIssuer(issuer)
-                .build();
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @PostConstruct
+    public void init() {
+        algorithm = Algorithm.HMAC256(secretKey);
+        verifier = JWT.require(algorithm).withIssuer(issuer).build();
     }
 
     public String generateToken(User user) {
