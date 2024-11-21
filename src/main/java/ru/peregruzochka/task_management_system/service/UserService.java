@@ -19,7 +19,7 @@ public class UserService {
 
     @PostConstruct
     public void init() {
-        adminService.createAdminIfNotExists();
+        adminService.createSuperAdminIfNotExists();
     }
 
     @Transactional

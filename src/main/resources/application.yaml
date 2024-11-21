@@ -25,8 +25,10 @@ jwt:
   expiration-days: 7
   secret-key: ${JWT_SECRET_KEY:secret}
 
-admin:
-  email: ${ADMIN_EMAIL:testadmin@example.test}
-  password: ${ADMIN_PASSWORD:Password1234}
+super-admin:
+  email: ${SUPER_ADMIN_EMAIL:testsuperadmin@example.test}
+  password: ${SUPER_ADMIN_PASSWORD:Password1234}
+  username: ${SUPER_ADMIN_USERNAME:test_super_admin}
+
 
 #TODO распределить профили для разработки и для прода
