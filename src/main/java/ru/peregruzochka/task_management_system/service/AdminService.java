@@ -11,7 +11,9 @@ import ru.peregruzochka.task_management_system.repository.UserRepository;
 
 import java.util.UUID;
 
-import static ru.peregruzochka.task_management_system.entity.UserRole.*;
+import static ru.peregruzochka.task_management_system.entity.UserRole.ADMIN;
+import static ru.peregruzochka.task_management_system.entity.UserRole.SUPER_ADMIN;
+import static ru.peregruzochka.task_management_system.entity.UserRole.USER;
 
 
 @Service
@@ -32,7 +34,8 @@ public class AdminService {
 
     @Transactional
     public void createSuperAdminIfNotExists() {
-        if (!userRepository.existsByEmail(superAdminEmail)) {
+        if (userRepository.findByRole(SUPER_ADMIN).isEmpty() && !userRepository.existsByEmail(superAdminEmail)) {
+
             User admin = User.builder()
                     .username(superAdminUsername)
                     .encodedPassword(passwordEncoder.encode(superAdminPassword))

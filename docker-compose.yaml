@@ -16,7 +16,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SUPER_ADMIN_EMAIL=peregruochka@gmail.com
+      - SUPER_ADMIN_EMAIL=super@example.test
       - SUPER_ADMIN_PASSWORD=Password1234
       - SUPER_ADMIN_USERNAME=super_admin
       - JWT_SECRET_KEY=40203abe6e81ed98cbc97cdd6ec4f144

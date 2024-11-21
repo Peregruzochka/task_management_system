@@ -1,3 +1,54 @@
 # SIMPLE TASK MANAGER SYSTEM
-```docker run --name task-manager-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=postgres -d -p 5432:5432 postgres:13.3```
+
+## Использованные технологии
+
+* [Spring Boot](https://spring.io/projects/spring-boot) – как основной фрэймворк
+* [PostgreSQL](https://www.postgresql.org/) – как основная реляционная база данных
+* [Testcontainers](https://testcontainers.com/) – для изолированного тестирования с базой данных
+* [Liquibase](https://www.liquibase.org/) – для ведения миграций схемы БД
+* [Gradle](https://gradle.org/) – как система сборки приложения
+
+## Локальный запуск
+
+**1. Убедитесь, что у вас установлен Docker и Docker Compose**
+
+Для проверки введите в терминале:
+```shell
+docker --version
+docker-compose --version
+```
+
+**2. Перейдите в каталог проекта**
+
+По умолчанию для супер-админа используются следующие параметры
+```yaml
+- SUPER_ADMIN_EMAIL=super@example.test
+- SUPER_ADMIN_PASSWORD=Password1234
+- SUPER_ADMIN_USERNAME=super_admin
+```
+С помощью этих данных можно авторизоваться в системе в качестве супер-администратора 
+При необходимости можно заменить параметры на свои в файле [docker-compose](docker-compose.yaml)
+
+**3. Запуск приложения:**
+```shell
+docker-composer up
+```
+
+**3. Остановка приложения**
+```shell
+docker-compose down
+```
+
+## Описание
+
+В данной системе реализована ролевая система которая включает в себя  супер-администратора, администраторов, 
+и обычных пользователей. Функциональные возможности каждой роли представлены на рисунке
+
+![img.png](picture/img.png)
+
+
+
+
+
+
 
