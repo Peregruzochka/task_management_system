@@ -46,15 +46,16 @@ public class CommentController {
     )
     @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    public CommentResponse createComment(
-            @RequestBody CommentRequest commentDto,
-            @RequestHeader("Authorization") String authHeader) {
+    public CommentResponse createComment(@RequestBody CommentRequest commentRequest,
+                                         @RequestHeader("Authorization") String authHeader) {
+        UUID userId = extractUserIdFromToken(authHeader);
 
-        UUID taskId = commentDto.getTaskId();
-        String text = commentDto.getText();
+        Comment comment = commentService.createComment(userId, commentRequest.getTaskId(), commentRequest.getText());
+        return commentMapper.toCommentDto(comment);
+    }
+
+    private UUID extractUserIdFromToken(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        UUID userId = jwtTokenProvider.extractUserId(token);
-        Comment savedComment = commentService.createComment(userId, taskId, text);
-        return commentMapper.toCommentDto(savedComment);
+        return jwtTokenProvider.extractUserId(token);
     }
 }

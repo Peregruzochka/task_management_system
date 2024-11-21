@@ -14,10 +14,11 @@ import ru.peregruzochka.task_management_system.repository.UserRepository;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static ru.peregruzochka.task_management_system.entity.TaskPriority.LOW;
 import static ru.peregruzochka.task_management_system.entity.TaskStatus.TODO;
+import static ru.peregruzochka.task_management_system.entity.UserRole.ADMIN;
+import static ru.peregruzochka.task_management_system.entity.UserRole.USER;
 
 @Slf4j
 @Service
@@ -29,33 +30,32 @@ public class TaskService {
 
     @Transactional
     public Task createTask(Task task) {
+
         validateUser(task.getAuthor(), "author");
-        validateUser(task.getAssignee(), "assignee");
-        if (Objects.isNull(task.getPriority())) {
-            task.setPriority(LOW);
+        if (Objects.nonNull(task.getAssignee())) {
+            validateUser(task.getAssignee(), "assignee");
         }
-        if (Objects.isNull(task.getStatus())) {
-            task.setStatus(TODO);
-        }
+
+        defaultIfNull(task::setAssignee, task.getAssignee(), task.getAuthor());
+        defaultIfNull(task::setPriority, task.getPriority(), LOW);
+        defaultIfNull(task::setStatus, task.getStatus(), TODO);
+
         Task createdTask = taskRepository.save(task);
         log.info("Task created: {}", createdTask);
         return createdTask;
     }
 
     @Transactional
-    public Task updateTask(Task task) {
+    public Task updateTask(Task task, UUID updaterId) {
         Task taskToUpdate = getTaskById(task.getId());
-        validateAuthor(task, taskToUpdate);
+        User updater = getUserById(updaterId);
 
-        updateField(task::getTitle, taskToUpdate::setTitle);
-        updateField(task::getDescription, taskToUpdate::setDescription);
-        updateField(task::getPriority, taskToUpdate::setPriority);
-        updateField(task::getStatus, taskToUpdate::setStatus);
+        validateAdminUpdater(taskToUpdate, updater);
 
-        if (Objects.nonNull(task.getAssignee())) {
-            validateAssigneeExists(task.getAssignee().getId());
-            taskToUpdate.setAssignee(task.getAssignee());
-        }
+        updateField(taskToUpdate::setTitle, task.getTitle());
+        updateField(taskToUpdate::setDescription, task.getDescription());
+        updateField(taskToUpdate::setPriority, task.getPriority());
+        updateField(taskToUpdate::setStatus, task.getStatus());
 
         Task updatedTask = taskRepository.save(taskToUpdate);
         log.info("Task updated: {}", updatedTask);
@@ -63,8 +63,13 @@ public class TaskService {
     }
 
     @Transactional
-    public Task changeStatus(UUID taskId, TaskStatus status) {
+    public Task changeStatus(UUID taskId, TaskStatus status, UUID updaterId) {
         Task taskToUpdate = getTaskById(taskId);
+        User updater = getUserById(updaterId);
+
+        validateAdminUpdater(taskToUpdate, updater);
+        validateUserUpdater(taskToUpdate, updater);
+
         TaskStatus oldStatus = taskToUpdate.getStatus();
         taskToUpdate.setStatus(status);
         Task updatedTask = taskRepository.save(taskToUpdate);
@@ -73,8 +78,12 @@ public class TaskService {
     }
 
     @Transactional
-    public Task deleteTask(UUID taskId) {
+    public Task deleteTask(UUID taskId, UUID deleterId) {
         Task deletedTask = getTaskById(taskId);
+        User deleter = getUserById(deleterId);
+
+        validateAdminUpdater(deletedTask, deleter);
+
         taskRepository.deleteById(taskId);
         return deletedTask;
     }
@@ -84,22 +93,32 @@ public class TaskService {
                 .orElseThrow(() -> new IllegalArgumentException("Task not found"));
     }
 
-    private void validateAuthor(Task task, Task taskToUpdate) {
-        if (!task.getAuthor().getId().equals(taskToUpdate.getAuthor().getId())) {
-            throw new IllegalArgumentException("Cannot change the task author");
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new IllegalArgumentException("User with id " + userId + " not found"));
+    }
+
+    private void validateAdminUpdater(Task taskToUpdate, User updater) {
+        if (updater.getRole().equals(ADMIN) && !taskToUpdate.getAuthor().getId().equals(updater.getId())) {
+            throw new IllegalStateException("No permission to update task");
         }
     }
 
-    private void validateAssigneeExists(UUID assigneeId) {
-        if (!userRepository.existsById(assigneeId)) {
-            throw new IllegalArgumentException("New assignee not found");
+    private void validateUserUpdater(Task taskToUpdate, User updater) {
+        if (updater.getRole().equals(USER) && !taskToUpdate.getAssignee().getId().equals(updater.getId())) {
+            throw new IllegalStateException("No permission to update task");
         }
     }
 
-    private <T> void updateField(Supplier<T> getter, Consumer<T> setter) {
-        if (Objects.nonNull(getter.get())) {
-            T value = getter.get();
+    private <T> void updateField(Consumer<T> setter, T value) {
+        if (Objects.nonNull(value)) {
             setter.accept(value);
+        }
+    }
+
+    private <T> void defaultIfNull(Consumer<T> setter, T value, T defaultValue) {
+        if (Objects.isNull(value)) {
+            setter.accept(defaultValue);
         }
     }
 
