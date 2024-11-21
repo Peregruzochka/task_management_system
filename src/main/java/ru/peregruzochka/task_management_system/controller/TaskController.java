@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,12 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.peregruzochka.task_management_system.dto.TaskDto;
+import ru.peregruzochka.task_management_system.dto.TaskFilterDto;
 import ru.peregruzochka.task_management_system.entity.Task;
+import ru.peregruzochka.task_management_system.entity.TaskPriority;
 import ru.peregruzochka.task_management_system.entity.TaskStatus;
 import ru.peregruzochka.task_management_system.mapper.TaskMapper;
 import ru.peregruzochka.task_management_system.service.TaskService;
 import ru.peregruzochka.task_management_system.util.JwtTokenProvider;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -35,11 +41,12 @@ public class TaskController {
     private final TaskService taskService;
     private final JwtTokenProvider jwtTokenProvider;
 
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     @Operation(summary = "Create new task [Available to admin]", description = "Creates a new task and returns the created task")
     @SecurityRequirement(name = "Bearer Authentication")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public TaskDto createTask(@RequestBody @Valid TaskDto taskDto,
                               @RequestHeader("Authorization") String authHeader) {
         UUID authorId = extractUserIdFromToken(authHeader);
@@ -52,9 +59,9 @@ public class TaskController {
 
     @PostMapping("/update")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Update/Edit an existing task [Available to admin]", description = "Updates an existing task and returns the updated task")
     @SecurityRequirement(name = "Bearer Authentication")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public TaskDto updateTask(@RequestBody @Valid TaskDto taskDto,
                               @RequestHeader("Authorization") String authHeader) {
         UUID updaterId = extractUserIdFromToken(authHeader);
@@ -64,13 +71,13 @@ public class TaskController {
         return taskMapper.toTaskDto(updatedTask);
     }
 
-    @PutMapping("/{taskId}")
+    @PutMapping("/{taskId}/status")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Change task status. [Available to all users after authorization]", description = "Updates the status of a task by its ID")
-    @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Change task status [Available to all users after authorization]", description = "Updates the status of a task by its ID")
+    @SecurityRequirement(name = "Bearer Authentication")
     public TaskDto changeStatus(@PathVariable UUID taskId,
-                                @RequestParam TaskStatus status,
+                                @RequestParam("value") TaskStatus status,
                                 @RequestHeader("Authorization") String authHeader) {
         UUID updaterId = extractUserIdFromToken(authHeader);
 
@@ -78,11 +85,39 @@ public class TaskController {
         return taskMapper.toTaskDto(updatedTask);
     }
 
+    @PutMapping("/{taskId}/priority")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Change task priority [Available to admin]", description = "Updates the priority of a task by its ID")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public TaskDto changePriority(@PathVariable UUID taskId,
+                                  @RequestParam("value") TaskPriority priority,
+                                  @RequestHeader("Authorization") String authHeader) {
+        UUID updaterId = extractUserIdFromToken(authHeader);
+
+        Task updatedTask = taskService.changePriority(taskId, priority, updaterId);
+        return taskMapper.toTaskDto(updatedTask);
+    }
+
+    @PutMapping("/{taskId}/assignee")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Assign task to a user [Available to admin]", description = "Assigns a user as the assignee of a task")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public TaskDto changeAssignee(@PathVariable UUID taskId,
+                                  @RequestParam("id") UUID assigneeId,
+                                  @RequestHeader("Authorization") String authHeader) {
+        UUID updaterId = extractUserIdFromToken(authHeader);
+
+        Task updatedTask = taskService.changeAssignee(taskId, assigneeId, updaterId);
+        return taskMapper.toTaskDto(updatedTask);
+    }
+
     @DeleteMapping("/{taskId}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Delete a task. [Available to admin]", description = "Deletes a task by its ID and returns the deleted task")
-    @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Delete a task [Available to admin]", description = "Deletes a task by its ID and returns the deleted task ")
+    @SecurityRequirement(name = "Bearer Authentication")
     public TaskDto deleteTask(@PathVariable UUID taskId,
                               @RequestHeader("Authorization") String authHeader) {
         UUID deleterId = extractUserIdFromToken(authHeader);
@@ -91,8 +126,20 @@ public class TaskController {
         return taskMapper.toTaskDto(deletedTask);
     }
 
+    @PostMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<TaskDto> getTasks(@RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "10") int size,
+                                  @RequestBody(required = false) TaskFilterDto filter) {
+
+        List<Task> tasks = taskService.getTasks(page, size, filter);
+        return taskMapper.toTaskDtoPage(tasks);
+    }
+
+
     private UUID extractUserIdFromToken(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         return jwtTokenProvider.extractUserId(token);
     }
 }
+

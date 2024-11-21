@@ -3,14 +3,24 @@ package ru.peregruzochka.task_management_system.service;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.peregruzochka.task_management_system.dto.TaskFilterDto;
 import ru.peregruzochka.task_management_system.entity.Task;
+import ru.peregruzochka.task_management_system.entity.TaskPriority;
 import ru.peregruzochka.task_management_system.entity.TaskStatus;
 import ru.peregruzochka.task_management_system.entity.User;
 import ru.peregruzochka.task_management_system.repository.TaskRepository;
 import ru.peregruzochka.task_management_system.repository.UserRepository;
+import ru.peregruzochka.task_management_system.specification.TaskSpecification;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -30,13 +40,14 @@ public class TaskService {
 
     @Transactional
     public Task createTask(Task task) {
-
-        validateUser(task.getAuthor(), "author");
-        if (Objects.nonNull(task.getAssignee())) {
-            validateUser(task.getAssignee(), "assignee");
+        User author = getUserById(task.getAuthor().getId());
+        if (Objects.isNull(task.getAssignee().getId())) {
+            task.setAssignee(author);
         }
 
-        defaultIfNull(task::setAssignee, task.getAssignee(), task.getAuthor());
+        User assignee = getUserById(task.getAssignee().getId());
+
+        defaultIfNull(task::setAssignee, assignee, author);
         defaultIfNull(task::setPriority, task.getPriority(), LOW);
         defaultIfNull(task::setStatus, task.getStatus(), TODO);
 
@@ -78,6 +89,35 @@ public class TaskService {
     }
 
     @Transactional
+    public Task changePriority(UUID taskId, TaskPriority priority, UUID updaterId) {
+        Task taskToUpdate = getTaskById(taskId);
+        User updater = getUserById(updaterId);
+
+        validateAdminUpdater(taskToUpdate, updater);
+
+        TaskStatus oldPriority = taskToUpdate.getStatus();
+        taskToUpdate.setPriority(priority);
+        Task updatedTask = taskRepository.save(taskToUpdate);
+        log.info("Task updated priority {} -> {}: {}", oldPriority, priority, updatedTask);
+        return updatedTask;
+    }
+
+    @Transactional
+    public Task changeAssignee(UUID taskId, UUID assigneeId, UUID updaterId) {
+        Task taskToUpdate = getTaskById(taskId);
+        User updater = getUserById(updaterId);
+
+        validateAdminUpdater(taskToUpdate, updater);
+
+        User newAssignee = getUserById(assigneeId);
+        String oldAssigneeEmail = taskToUpdate.getAssignee().getEmail();
+        taskToUpdate.setAssignee(newAssignee);
+        Task updatedTask = taskRepository.save(taskToUpdate);
+        log.info("Task updated assignee {} -> {}: {}", oldAssigneeEmail, newAssignee.getEmail(), updatedTask);
+        return updatedTask;
+    }
+
+    @Transactional
     public Task deleteTask(UUID taskId, UUID deleterId) {
         Task deletedTask = getTaskById(taskId);
         User deleter = getUserById(deleterId);
@@ -87,6 +127,36 @@ public class TaskService {
         taskRepository.deleteById(taskId);
         return deletedTask;
     }
+
+    @Transactional(readOnly = true)
+    public List<Task> getTasks(int page, int size, TaskFilterDto filter) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (Objects.isNull(filter)) {
+            return taskRepository.findAll(pageable).getContent();
+        }
+
+        List<User> assignees = new ArrayList<>();
+        if (Objects.nonNull(filter.getAssignees())) {
+            assignees.addAll(userRepository.findAllById(filter.getAssignees()));
+        }
+
+        List<User> authors = new ArrayList<>();
+        if (Objects.nonNull(filter.getAuthors())) {
+            authors.addAll(userRepository.findAllById(filter.getAuthors()));
+        }
+
+        Specification<Task> spec = Specification.where(TaskSpecification.likeTitle(filter.getTitlePattern()))
+                .and(TaskSpecification.hasAssignee(assignees))
+                .and(TaskSpecification.hasAuthor(authors))
+                .and(TaskSpecification.hasStatus(filter.getStatuses()))
+                .and(TaskSpecification.hasPriority(filter.getPriorities()))
+                .and(TaskSpecification.after(filter.getStartDate()))
+                .and(TaskSpecification.before(filter.getEndDate()));
+
+        return taskRepository.findAll(spec, pageable).getContent();
+    }
+
 
     private Task getTaskById(UUID taskId) {
         return taskRepository.findById(taskId)
@@ -119,13 +189,6 @@ public class TaskService {
     private <T> void defaultIfNull(Consumer<T> setter, T value, T defaultValue) {
         if (Objects.isNull(value)) {
             setter.accept(defaultValue);
-        }
-    }
-
-    private void validateUser(User user, String role) {
-        if (!userRepository.existsById(user.getId())) {
-            log.error("This user cannot be the {} because they do not exist. Invalid user id = {}", role, user.getId());
-            throw new IllegalArgumentException(String.format("This user cannot be the %s because they do not exist", role));
         }
     }
 }

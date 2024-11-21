@@ -11,6 +11,7 @@ import ru.peregruzochka.task_management_system.entity.TaskPriority;
 import ru.peregruzochka.task_management_system.entity.TaskStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -42,6 +43,9 @@ public class TaskDto {
 
     @Schema(description = "ID of the user assigned to execute the task", example = "123e4567-e89b-12d3-a456-426614174002")
     private UUID assigneeId;
+
+    @Schema(description = "List of IDs for the comments associated with the task", example = "['123e4567-e89b-12d3-a456-426614174003']")
+    private List<UUID> commentsIds;
 
     @Schema(description = "Timestamp when the task was created", example = "2023-11-20T10:15:30")
     private LocalDateTime createdAt;
