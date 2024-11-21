@@ -50,7 +50,7 @@ public class TaskService {
         defaultIfNull(task::setStatus, task.getStatus(), TODO);
 
         Task createdTask = taskRepository.save(task);
-        log.info("Task created: {}", createdTask);
+        log.info("Task created: {}<{}>", createdTask.getTitle(), createdTask.getId());
         return createdTask;
     }
 
@@ -72,7 +72,7 @@ public class TaskService {
         }
 
         Task updatedTask = taskRepository.save(taskToUpdate);
-        log.info("Task updated: {}", updatedTask);
+        log.info("Task updated: {}<{}>", updatedTask.getTitle(), updatedTask.getId());
         return updatedTask;
     }
 
@@ -128,6 +128,7 @@ public class TaskService {
         validateAdminUpdater(deletedTask, deleter);
 
         taskRepository.deleteById(taskId);
+        log.info("Task deleted: {}<{}>", deletedTask.getTitle(), deletedTask.getId());
         return deletedTask;
     }
 
@@ -157,7 +158,9 @@ public class TaskService {
                 .and(TaskSpecification.after(filter.getStartDate()))
                 .and(TaskSpecification.before(filter.getEndDate()));
 
-        return taskRepository.findAll(spec, pageable).getContent();
+        List<Task> tasks = taskRepository.findAll(spec, pageable).getContent();
+        log.info("Task returned: {}", tasks.size());
+        return tasks;
     }
 
 
