@@ -87,7 +87,8 @@ public class TaskService {
         TaskStatus oldStatus = taskToUpdate.getStatus();
         taskToUpdate.setStatus(status);
         Task updatedTask = taskRepository.save(taskToUpdate);
-        log.info("Task updated status {} -> {}: {}", oldStatus, status, updatedTask);
+        log.info("Task updated status {} -> {}: {}<{}>",
+                oldStatus, status, updatedTask.getTitle(), updatedTask.getId());
         return updatedTask;
     }
 
@@ -101,7 +102,8 @@ public class TaskService {
         TaskStatus oldPriority = taskToUpdate.getStatus();
         taskToUpdate.setPriority(priority);
         Task updatedTask = taskRepository.save(taskToUpdate);
-        log.info("Task updated priority {} -> {}: {}", oldPriority, priority, updatedTask);
+        log.info("Task updated priority {} -> {}: {}<{}>",
+                oldPriority, priority, updatedTask.getTitle(), updatedTask.getId());
         return updatedTask;
     }
 
@@ -116,7 +118,8 @@ public class TaskService {
         String oldAssigneeEmail = taskToUpdate.getAssignee().getEmail();
         taskToUpdate.setAssignee(newAssignee);
         Task updatedTask = taskRepository.save(taskToUpdate);
-        log.info("Task updated assignee {} -> {}: {}", oldAssigneeEmail, newAssignee.getEmail(), updatedTask);
+        log.info("Task updated assignee {} -> {}: {}<{}>",
+                oldAssigneeEmail, newAssignee.getEmail(), updatedTask.getTitle(), updatedTask.getId());
         return updatedTask;
     }
 
