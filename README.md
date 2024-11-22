@@ -6,6 +6,10 @@
 * [PostgreSQL](https://www.postgresql.org/) – как основная реляционная база данных
 * [Liquibase](https://www.liquibase.org/) – для ведения миграций схемы БД
 * [Gradle](https://gradle.org/) – как система сборки приложения
+* [Swagger UI](https://docs.swagger.io/spec.html) - для автоматического создания документации
+* [Docker](https://www.docker.com/) - развертывание среды разработки
+* [Testcontainers](https://testcontainers.com/) - запуск интеграционных тестов с изолироваными контейнерами
+* [GitHub Actions](https://docs.github.com/ru/actions) - настройка CI для сборки и тестирования
 
 ## Локальный запуск
 
